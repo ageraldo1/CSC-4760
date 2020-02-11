@@ -28,7 +28,11 @@ ___
 
 ### Web Console
 ___
-+ **URL** : http://master.hadoop.student.gsu.edu:8080/
++ Cluster
+    + **URL** : http://master.hadoop.student.gsu.edu:8080/
+
++ Driver (PySparkShell)
+    + **URL** : http://master.hadoop.student.gsu.edu:4040/jobs/
 
 
 ### PySpark 
