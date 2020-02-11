@@ -1,5 +1,5 @@
 ## **Assignment #2**
-### **Spark WordCount Application###**
+### **Spark WordCount Application**
 ____
 
 
@@ -22,7 +22,7 @@ for example -- **"word Word word WoRd apple":**
 
 The character count similar analyzes the occurrences, representations and frequency analysis of character in the document.
 
-#### **Instructions**
+#### **Implementation**
 ____
 
 + **Program :** [wordcount.py](wordcount.py)
