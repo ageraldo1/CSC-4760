@@ -102,6 +102,46 @@ ____
     python wordcount.py --from_file=resources/sample1.txt --to_csv_file=/tmp/result.txt --print_to_screen=false
     ```
 
+#### **Output format**
+___
++ **Screen** : A JSON object is used to display the statistics of each word processed by the program:
+
+    ```json
+        "order_key": {
+            "occurrences"     : "integer",
+            "representations" : ["string" ],
+            "percentage"      : "double"
+
+    ```
+
+    + Example:
+    ```json
+        "word": {
+            "occurrences": 4,
+            "representations": [
+                "word",
+                "Word",
+                "WoRd"
+            ],
+            "percentage": 0.8
+        }    
+    ```
+
++ **File** : A CSV [sample.csv](resources/sample.csv) file is created and store  the statistics of each word processed by the program:
+
+    + Example:
+
+    ```csv
+
+    | word   | percentage            | occurrences | representations | 
+    |--------|-----------------------|-------------|-----------------| 
+    | when   | 0.0035087719298245615 | 1           | When            | 
+    | jackie | 0.007017543859649123  | 2           | Jackie          | 
+    
+    ```
+
+___    
+
 #### **Additional information**
 ____
 + List top 10 words by occurrences in decendent order, use:
