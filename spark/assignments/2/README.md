@@ -29,20 +29,27 @@ ____
 
 + **How to use it :**
 
-```
-python wordcount.py --help
-usage: wordcount.py [-h] [--print_to_screen] [--from_url] [--from_file]  [--to_csv_file]
+    + Using python command line interpreter
+    ```
+    python wordcount.py --help
+    usage: wordcount.py [-h] [--print_to_screen] [--from_url] [--from_file]  [--to_csv_file]
 
-Spark WordCount Application
+    Spark WordCount Application
 
-optional arguments:
-  -h, --help          show this help message and exit
-  --print_to_screen   print analysis result to screen
-  --from_url          URL of file
-  --from_file         Path of file
-  --to_csv_file       Path to save the result in a CSV file
+    optional arguments:
+    -h, --help          show this help message and exit
+    --print_to_screen   print analysis result to screen
+    --from_url          URL of file
+    --from_file         Path of file
+    --to_csv_file       Path to save the result in a CSV file
 
-```
+    ```
+
+    + Using spark-submit command line utility
+    ```bash
+        $SPARK_HOME/bin/spark-submit wordcount.py [options] 
+    ```
+
 
 #### **Examples**
 ____
@@ -137,7 +144,7 @@ ___
     |--------|-----------------------|-------------|-----------------| 
     | when   | 0.0035087719298245615 | 1           | When            | 
     | jackie | 0.007017543859649123  | 2           | Jackie          | 
-    
+
     ```
 
 ___    
