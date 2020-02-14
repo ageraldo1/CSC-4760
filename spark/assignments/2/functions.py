@@ -82,6 +82,19 @@ def get_rdd():
     else:
         return sample_rdd
 
+def get_sc():
+    try:
+        conf = SparkConf()\
+            .setMaster('local')\
+            .setAppName('Assignment 2')
+
+        return SparkContext(conf=conf).getOrCreate()
+
+    except Exception as e:
+        print(f"Error creating Spark context - {e}")
+
+    return None
+
        
 def split_word(content):
     REG_EXPR = "'?([_-a-zA-z0-9']+)'?"
@@ -95,10 +108,10 @@ def split_word(content):
     
     return words    
 
-def save_to_csv(stats):
+def save_to_csv(stats, csv_file_name):
     field_names = ['word', 'percentage', 'occurrences', 'representations']
 
-    with open(to_csv_file, "w") as f:
+    with open(csv_file_name, "w") as f:
         writer = csv.DictWriter(f, fieldnames=field_names)
         
         writer.writeheader()
@@ -114,53 +127,67 @@ def save_to_csv(stats):
             writer.writerow(row)
 
 def process():
-    conf = SparkConf().setMaster('local').setAppName('Assignment 2')
-    sc = SparkContext(conf=conf)
-
-    data_source = get_rdd()
-    
-    if (from_random):        
-        rdd = sc.parallelize(data_source)
-
-    else:
-        rdd = sc.textFile(data_source)
-    
-    stats = {}
+    stats_words = {}
+    stats_char = {}
     total_words = 0
+    total_char = 0
 
-    for words in rdd.filter(lambda line: len(line.strip()) > 0).map(split_word).collect():
-        for word in words:
+    sc = get_sc()
+
+    if (sc):
+        data_source = get_rdd()
         
-            total_words = total_words + 1        
-            word_key = word.strip().lower()
-        
-            if word_key in stats:
-                stats[word_key]['occurrences'] = stats[word_key]['occurrences'] + 1
-            
-                if not word in stats[word_key]['representations']:
-                    stats[word_key]['representations'].append(word)                
-            else:
-                representations = []            
-                representations.append(word)
-            
-                record = {
-                    "occurrences"     : 1, 
-                    "representations" : representations, 
-                }
-            
-                stats[word_key] = record
+        if (from_random):        
+            rdd = sc.parallelize(data_source)
 
-    for word in stats:
-        stats[word]['percentage'] = float(stats[word]['occurrences'] / total_words)
+        else:
+            rdd = sc.textFile(data_source)
 
-    if (to_csv_file):
-        save_to_csv(stats)
+        # generate main rdd
+        words = rdd.flatMap(split_word)
+        characters = words.flatMap(lambda word: word)
 
-    if (print_to_screen):
-        print(json.dumps(stats,indent=4))  
-        print(f"Total of words : {total_words}")
+        total_words = words.count()
+        total_char = characters.count()
 
-    sc.stop()
+        # process words list
+        for record in words.map(lambda item: (item.strip().lower(), item)).reduceByKey(lambda k,v: k+","+v).collect():
+            key   = record[0]
+            value = record[1].split(',')
+
+            stats_words[key] = {
+                'occurrences'     : len(value),
+                'representations' : list(set(value)),
+                'percentage'      : len(value)/total_words
+            }
+
+        # process character list
+        for record in characters.map(lambda char: (char.lower(), char)).reduceByKey(lambda k,v: k+","+v).collect():
+            key   = record[0]
+            value = record[1].split(',')
+
+            stats_char[key] = {
+                'occurrences'     : len(value),
+                'representations' : list(set(value)),
+                'percentage'      : len(value)/total_char
+            }
+
+
+        if (to_csv_file):
+            save_to_csv(stats_words, to_csv_file.split(".")[0] + "_word_stats." + to_csv_file.split(".")[1])
+            save_to_csv(stats_char, to_csv_file.split(".")[0] + "_word_char." + to_csv_file.split(".")[1])
+
+        if (print_to_screen):
+            print ("Words statistics")
+            print(json.dumps(stats_words,indent=4))  
+
+            print ("Characters statistics")
+            print(json.dumps(stats_char,indent=4))  
+
+            print(f"Total of words........: {total_words}")
+            print(f"Total of characters...: {total_char}")
+
+        sc.stop()
 
 def end():
     seconds_elapsed = (datetime.datetime.now() - start_exec).total_seconds()
