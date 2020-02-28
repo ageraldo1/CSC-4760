@@ -29,20 +29,27 @@ ____
 
 + **How to use it :**
 
-```
-python wordcount.py --help
-usage: wordcount.py [-h] [--print_to_screen] [--from_url] [--from_file]  [--to_csv_file]
+    + Using python command line interpreter
+    ```
+    python wordcount.py --help
+    usage: wordcount.py [-h] [--print_to_screen] [--from_url] [--from_file]  [--to_csv_file]
 
-Spark WordCount Application
+    Spark WordCount Application
 
-optional arguments:
-  -h, --help          show this help message and exit
-  --print_to_screen   print analysis result to screen
-  --from_url          URL of file
-  --from_file         Path of file
-  --to_csv_file       Path to save the result in a CSV file
+    optional arguments:
+    -h, --help          show this help message and exit
+    --print_to_screen   print analysis result to screen
+    --from_url          URL of file
+    --from_file         Path of file
+    --to_csv_file       Path to save the result in a CSV file
 
-```
+    ```
+
+    + Using spark-submit command line utility
+    ```bash
+        $SPARK_HOME/bin/spark-submit wordcount.py [options] 
+    ```
+
 
 #### **Examples**
 ____
@@ -101,6 +108,46 @@ ____
     ```
     python wordcount.py --from_file=resources/sample1.txt --to_csv_file=/tmp/result.txt --print_to_screen=false
     ```
+
+#### **Output format**
+___
++ **Screen** : A JSON object is used to display the statistics of each word processed by the program:
+
+    ```json
+        "order_key": {
+            "occurrences"     : "integer",
+            "representations" : ["string" ],
+            "percentage"      : "double"
+
+    ```
+
+    + Example:
+    ```json
+        "word": {
+            "occurrences": 4,
+            "representations": [
+                "word",
+                "Word",
+                "WoRd"
+            ],
+            "percentage": 0.8
+        }    
+    ```
+
++ **File** : A CSV [sample.csv](resources/sample.csv) file is created and store  the statistics of each word processed by the program:
+
+    + Example:
+
+    ```csv
+
+    | word   | percentage            | occurrences | representations | 
+    |--------|-----------------------|-------------|-----------------| 
+    | when   | 0.0035087719298245615 | 1           | When            | 
+    | jackie | 0.007017543859649123  | 2           | Jackie          | 
+
+    ```
+
+___    
 
 #### **Additional information**
 ____
