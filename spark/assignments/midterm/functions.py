@@ -5,12 +5,13 @@ import datetime
 import os
 import io
 import csv
-import pandas as pd
 import nltk
 import shutil
 
 
 from pyspark import SparkConf, SparkContext
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import upper
 from nltk.corpus import words
 
 def clear():
@@ -121,26 +122,32 @@ def save_to_csv(stats, csv_file_name):
 
             writer.writerow(row)
 
+def get_spark_session():
+    return SparkSession.builder.appName('Midterm').getOrCreate()
 
 def get_keys_decode_order(freq_report):
-    prefer_keys_order = []
-
-    letters = pd.read_csv(freq_report)
-    cond = letters['letter'].str.contains('[A-Z]')
-    ceaser_letters = letters[cond].copy(deep=True)
-
-    ceaser_letters.sort_values(by=['occurrences'],ascending=False, inplace=True)
-
-    en_letters = pd.read_csv(freq_en_letters)
-    en_letters.sort_values(by=['count'],ascending=False, inplace=True)
-
-    for i in range(en_letters.shape[0]):
-        en_key   = en_letters['letter'].values[i]
-        dec_key  = ceaser_letters['letter'].values[i]    
-        key_size = abs(ord(dec_key) - ord(en_key))
-
-        prefer_keys_order.append(key_size)
     
+    prefer_keys_order = []
+    spark = get_spark_session()
+
+    letters = spark.read.csv(path=freq_report, inferSchema=True, header=True)
+    letters = letters.withColumn('letter', upper(letters['letter']))
+    ceaser_letters = letters.filter(letters['letter'].rlike('[A-Z]')).orderBy(letters['occurrences'].desc())
+    ceaser_list = [l.asDict()['letter'] for l in ceaser_letters.select('letter').collect()]
+
+    en_letters = spark.read.csv(path=freq_en_letters, inferSchema=True, header=True)
+    en_letters = en_letters.withColumn('letter', upper(en_letters['letter']))
+    en_letters = en_letters.filter(en_letters['letter'].rlike('[A-Z]')).orderBy(en_letters['count'].desc())
+    en_letters_list = [l.asDict()['letter'] for l in en_letters.select('letter').collect()]    
+   
+    for i in range(len(en_letters_list)):
+        en_key  = en_letters_list[i]
+        dec_key = ceaser_list[i]
+        key_size = abs(ord(en_key) - ord(dec_key))
+        
+        prefer_keys_order.append(key_size)
+        
+        
     decode_order  =  list(dict.fromkeys(prefer_keys_order))
     missing_items = [x for x in range(26) if x not in decode_order]
 
